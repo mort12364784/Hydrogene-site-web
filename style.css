@@ -1,0 +1,123 @@
+/* -------------------------------
+   POLICES & STYLE GENERAL
+--------------------------------*/
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f7f9fc;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* -------------------------------
+   HEADER
+--------------------------------*/
+header {
+    background: linear-gradient(135deg, #2E8B57, #3CB371);
+    color: white;
+    text-align: center;
+    padding: 60px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* -------------------------------
+   CARTES
+--------------------------------*/
+.card {
+    background: white;
+    margin: 20px auto;
+    padding: 25px;
+    border-radius: 20px;
+    max-width: 800px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+}
+
+.card h2 {
+    color: #2E8B57;
+    margin-bottom: 15px;
+}
+
+/* -------------------------------
+   LISTE
+--------------------------------*/
+ul {
+    padding-left: 20px;
+    list-style: none;
+}
+
+ul li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 10px;
+}
+
+ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #3CB371;
+    font-size: 1.2rem;
+    top: 0;
+}
+
+/* -------------------------------
+   FOOTER
+--------------------------------*/
+footer {
+    text-align: center;
+    background: #2E8B57;
+    color: white;
+    padding: 25px 10px;
+    margin-top: 40px;
+    font-weight: 500;
+}
+
+/* -------------------------------
+   BOUTONS (OPTIONNELS)
+--------------------------------*/
+button {
+    background: #3CB371;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background: #2E8B57;
+}
+
+/* -------------------------------
+   RESPONSIVE
+--------------------------------*/
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .card {
+        margin: 15px;
+        padding: 20px;
+    }
+}
