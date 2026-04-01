@@ -582,15 +582,37 @@
         /* ── Mobile nav toggle ───────────────────── */
         const toggle = document.getElementById('navToggle');
         const menu   = document.getElementById('navMenu');
-        toggle.addEventListener('click', () => {
-            const open = toggle.getAttribute('aria-expanded') === 'true';
-            toggle.setAttribute('aria-expanded', String(!open));
-            menu.classList.toggle('is-open');
-        });
-        menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+        
+        const closeMenu = () => {
             toggle.setAttribute('aria-expanded', 'false');
             menu.classList.remove('is-open');
-        }));
+            document.body.style.overflow = '';
+        };
+        
+        const openMenu = () => {
+            toggle.setAttribute('aria-expanded', 'true');
+            menu.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        };
+        
+        toggle.addEventListener('click', () => {
+            const open = toggle.getAttribute('aria-expanded') === 'true';
+            if (open) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+        
+        // Close menu when clicking menu links
+        menu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMenu));
+        
+        // Close menu when clicking overlay (the ::before pseudo-element area)
+        menu.addEventListener('click', (e) => {
+            if (e.target === menu) {
+                closeMenu();
+            }
+        });
 
         /* ── Navbar scroll shrink ────────────────── */
         const navbar = document.querySelector('.navbar');
