@@ -994,6 +994,16 @@ body {
     align-items: center;
     gap: 1.5rem;
     flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+@media (max-width: 768px) {
+    .org-strip-inner {
+        flex-wrap: nowrap;
+        overflow: hidden;
+        padding-right: 0;
+        position: relative;
+    }
 }
 .org-strip-label {
     font-size: .68rem;
@@ -1004,11 +1014,42 @@ body {
     white-space: nowrap;
     flex-shrink: 0;
 }
+
+@media (max-width: 768px) {
+    .org-strip-label {
+        position: relative;
+        z-index: 2;
+        background: linear-gradient(to right, var(--white) 80%, transparent 100%);
+        padding-right: 2rem;
+    }
+}
 .org-logos {
     display: flex;
     align-items: center;
     gap: 1.25rem;
     flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .org-logos {
+        flex-wrap: nowrap;
+        gap: 2rem;
+        animation: scroll-logos 30s linear infinite;
+        position: absolute;
+        right: 0;
+        left: 0;
+        padding-left: 100%;
+        z-index: 1;
+    }
+    
+    @keyframes scroll-logos {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
+    }
 }
 .org-divider {
     width: 1px;
@@ -1167,7 +1208,6 @@ body {
     .comite-grid { grid-template-columns: 1fr; }
     .cta-actions { flex-direction: column; }
     .footer-bottom .container { flex-direction: column; gap: 1rem; text-align: center; }
-    .org-strip-label { display: none; }
     .org-logos { gap: .85rem; }
     .org-logo { height: 26px; }
 }
