@@ -14,10 +14,10 @@ if (!wrap || !canvas) throw new Error('mol3d: mount not found');
 /* ── Scene ──────────────────────────────────────────────── */
 const scene = new THREE.Scene();
 scene.background = null;
-scene.fog = new THREE.FogExp2(0x9ec8db, 0.042);
+scene.fog = new THREE.FogExp2(0x9ec8db, 0.018); // Reduced from 0.042 to 0.018
 
 /* ── Camera ─────────────────────────────────────────────── */
-const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 200); // Tighter FOV
+const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 200); // Tighter FOV for sharper perspective
 camera.position.set(8, 4, 12);   // Moved much closer and lower
 
 /* ── Renderer ───────────────────────────────────────────── */
@@ -28,13 +28,18 @@ const renderer = new THREE.WebGLRenderer({
     powerPreference:  'high-performance',
     premultipliedAlpha: false,
 });
-renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.5 : 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 2 : 2.5));
 renderer.setClearColor(0x000000, 0);
 renderer.toneMapping         = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.95;
 renderer.outputColorSpace    = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled   = true;
 renderer.shadowMap.type      = THREE.PCFSoftShadowMap;
+
+// Initial size setup
+renderer.setSize(wrap.clientWidth, wrap.clientHeight, false);
+camera.aspect = wrap.clientWidth / wrap.clientHeight;
+camera.updateProjectionMatrix();
 
 /* ── Controls ───────────────────────────────────────────── */
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -90,7 +95,7 @@ const envGroup = new THREE.Group();
 scene.add(envGroup);
 
 /* ── Sky dome ───────────────────────────────────────────── */
-const skyGeo = new THREE.SphereGeometry(120, 32, 16);
+const skyGeo = new THREE.SphereGeometry(120, 48, 24);
 skyGeo.scale(-1, 1, -1); // inside-out
 const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
@@ -185,7 +190,7 @@ const cloudDefs = (() => {
 })();
 
 const cloudGroups = [];
-const puffGeo = new THREE.SphereGeometry(1, 9, 7);
+const puffGeo = new THREE.SphereGeometry(1, 16, 12);
 
 for (const [cx, cy, cz, layout, speed, angle] of cloudDefs) {
     const grp = new THREE.Group();
@@ -210,7 +215,7 @@ for (const [cx, cy, cz, layout, speed, angle] of cloudDefs) {
 
 /* ── Ground ─────────────────────────────────────────────── */
 const groundMat = new THREE.MeshLambertMaterial({ color: 0x3b6830 });
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), groundMat);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(140, 140, 64, 64), groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.position.y = -3.15;
 ground.receiveShadow = true;
@@ -226,7 +231,7 @@ function makePine(x, z, scale) {
     const g = new THREE.Group();
     g.position.set(x, -3.15, z);
     const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.07*scale, 0.12*scale, 1.0*scale, 7),
+        new THREE.CylinderGeometry(0.07*scale, 0.12*scale, 1.0*scale, 16),
         new THREE.MeshLambertMaterial({ color: 0x5c3a1e })
     );
     trunk.position.y = 0.5 * scale;
@@ -239,7 +244,7 @@ function makePine(x, z, scale) {
     ];
     for (const d of coneData) {
         const cone = new THREE.Mesh(
-            new THREE.ConeGeometry(d.r*scale, d.h*scale, 8),
+            new THREE.ConeGeometry(d.r*scale, d.h*scale, 16),
             new THREE.MeshLambertMaterial({ color: d.color })
         );
         cone.position.y = d.y * scale;
@@ -253,7 +258,7 @@ function makeBroadleaf(x, z, scale) {
     const g = new THREE.Group();
     g.position.set(x, -3.15, z);
     const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.10*scale, 0.16*scale, 1.4*scale, 8),
+        new THREE.CylinderGeometry(0.10*scale, 0.16*scale, 1.4*scale, 16),
         new THREE.MeshLambertMaterial({ color: 0x4a2e12 })
     );
     trunk.position.y = 0.7 * scale;
@@ -268,7 +273,7 @@ function makeBroadleaf(x, z, scale) {
     ];
     for (const p of canopyPuffs) {
         const m = new THREE.Mesh(
-            new THREE.SphereGeometry(p.r*scale, 8, 6),
+            new THREE.SphereGeometry(p.r*scale, 16, 12),
             new THREE.MeshLambertMaterial({ color: p.color })
         );
         m.position.set(p.dx*scale, p.dy*scale, p.dz*scale);
@@ -282,13 +287,13 @@ function makePoplar(x, z, scale) {
     const g = new THREE.Group();
     g.position.set(x, -3.15, z);
     const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.05*scale, 0.08*scale, 1.2*scale, 6),
+        new THREE.CylinderGeometry(0.05*scale, 0.08*scale, 1.2*scale, 16),
         new THREE.MeshLambertMaterial({ color: 0x5a3515 })
     );
     trunk.position.y = 0.6 * scale;
     g.add(trunk);
     const foliage = new THREE.Mesh(
-        new THREE.ConeGeometry(0.28*scale, 2.6*scale, 7),
+        new THREE.ConeGeometry(0.28*scale, 2.6*scale, 12),
         new THREE.MeshLambertMaterial({ color: 0x1a5c1a })
     );
     foliage.position.y = 2.2 * scale;
@@ -309,7 +314,7 @@ function makeShrub(x, z, scale) {
     ];
     for (const p of puffs) {
         const m = new THREE.Mesh(
-            new THREE.SphereGeometry(p.r*scale, 7, 5),
+            new THREE.SphereGeometry(p.r*scale, 14, 10),
             new THREE.MeshLambertMaterial({ color: p.color })
         );
         m.position.set(p.dx*scale, p.dy*scale, p.dz*scale);
@@ -324,7 +329,7 @@ function makeDeadTree(x, z, scale) {
     g.position.set(x, -3.15, z);
     const trunkMat = new THREE.MeshLambertMaterial({ color: 0x3d2810 });
     const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.06*scale, 0.11*scale, 1.8*scale, 6),
+        new THREE.CylinderGeometry(0.06*scale, 0.11*scale, 1.8*scale, 16),
         trunkMat
     );
     trunk.position.y = 0.9 * scale;
@@ -338,7 +343,7 @@ function makeDeadTree(x, z, scale) {
     ];
     for (const b of branches) {
         const br = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.025*scale, 0.04*scale, b.len*scale, 5),
+            new THREE.CylinderGeometry(0.025*scale, 0.04*scale, b.len*scale, 12),
             trunkMat
         );
         br.position.y = b.y * scale;
@@ -409,7 +414,7 @@ const bushPositions = [
 ];
 for (const [bx, bz] of bushPositions) {
     const r = 0.18 + (Math.abs(bx * bz) % 0.28);
-    const bush = new THREE.Mesh(new THREE.SphereGeometry(r, 7, 5), bushMat);
+    const bush = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), bushMat);
     bush.position.set(bx, -3.15 + r * 0.5, bz);
     bush.castShadow = true;
     envGroup.add(bush);
@@ -428,13 +433,13 @@ for (let fi = 0; fi < flowerSpots.length; fi++) {
         const ox = (k * 0.31 % 0.4) - 0.2;
         const oz = (k * 0.47 % 0.4) - 0.2;
         const stem = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.012, 0.015, 0.22, 4),
+            new THREE.CylinderGeometry(0.012, 0.015, 0.22, 12),
             new THREE.MeshLambertMaterial({ color: 0x4a8c30 })
         );
         stem.position.set(fx + ox, -3.15 + 0.11, fz + oz);
         envGroup.add(stem);
         const petal = new THREE.Mesh(
-            new THREE.SphereGeometry(0.055, 5, 4),
+            new THREE.SphereGeometry(0.055, 16, 12),
             new THREE.MeshLambertMaterial({ color: flowerColors[(fi + k) % flowerColors.length] })
         );
         petal.position.set(fx + ox, -3.15 + 0.24, fz + oz);
@@ -619,11 +624,15 @@ const PLASTIC_VERT = `
     varying vec3 vNormal;
     varying vec3 vViewDir;
     varying vec3 vWorldNormal;
+    varying vec3 vWorldPos;
+    varying float vFogDepth;
     void main() {
         vNormal = normalize(normalMatrix * normal);
         vec4 mvPos = modelViewMatrix * vec4(position * uScale, 1.0);
         vViewDir = normalize(-mvPos.xyz);
         vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+        vWorldPos = (modelMatrix * vec4(position * uScale, 1.0)).xyz;
+        vFogDepth = -mvPos.z;
         gl_Position = projectionMatrix * mvPos;
     }
 `;
@@ -639,10 +648,25 @@ const PLASTIC_FRAG = `
     varying vec3 vNormal;
     varying vec3 vViewDir;
     varying vec3 vWorldNormal;
+    varying vec3 vWorldPos;
+    varying float vFogDepth;
     
     const vec3 L_KEY = normalize(vec3(4.0, 7.0, 5.0));
     const vec3 L_FILL = normalize(vec3(-5.0, 2.0, 3.0));
     const vec3 L_RIM = normalize(vec3(-3.0, -4.0, -6.0));
+    
+    // Simple 3D noise for uneven fog
+    float noise3D(vec3 p) {
+        return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+    }
+    
+    float fbm(vec3 p) {
+        float f = 0.0;
+        f += 0.5000 * noise3D(p); p *= 2.01;
+        f += 0.2500 * noise3D(p); p *= 2.02;
+        f += 0.1250 * noise3D(p);
+        return f;
+    }
     
     void main() {
         vec3 n = normalize(vNormal);
@@ -662,6 +686,15 @@ const PLASTIC_FRAG = `
         vec3 col = diff + spec + (fresnel * uSpecColor);
         
         col += uHover * vec3(0.2, 0.2, 0.2); // Hover glow effect
+        
+        // Uneven fog calculation
+        vec3 fogPos = vWorldPos * 0.08 + vec3(uTime * 0.02, 0.0, uTime * 0.015);
+        float fogNoise = fbm(fogPos) * 0.6 + 0.4; // Range [0.4, 1.0]
+        float fogFactor = exp(-vFogDepth * 0.018 * fogNoise);
+        fogFactor = clamp(fogFactor, 0.0, 1.0);
+        
+        vec3 fogColor = vec3(0.62, 0.78, 0.86); // #9ec8db
+        col = mix(fogColor, col, fogFactor);
         
         gl_FragColor = vec4(col, 1.0);
         
@@ -685,7 +718,8 @@ const turbineMat = new THREE.ShaderMaterial({
         uFresnelStr: { value: 0.2 },
         uHover: { value: 0.0 },
         uTime: { value: 0.0 }
-    }
+    },
+    fog: false // Disable built-in fog since we're using custom
 });
 timedMats.push(turbineMat);
 
@@ -699,7 +733,7 @@ scene.add(turbineGroup);
 
 // 1. TOWER
 const towerHeight = 12;
-const towerGeo = new THREE.CylinderGeometry(0.3, 0.6, towerHeight, 32);
+const towerGeo = new THREE.CylinderGeometry(0.3, 0.6, towerHeight, 48);
 const towerMesh = new THREE.Mesh(towerGeo, turbineMat);
 towerMesh.position.y = towerHeight / 2;
 turbineGroup.add(towerMesh);
@@ -710,7 +744,7 @@ const nacelleGroup = new THREE.Group();
 nacelleGroup.position.y = towerHeight;
 turbineGroup.add(nacelleGroup);
 
-const nacelleGeo = new THREE.CapsuleGeometry(0.4, 1.5, 16, 32);
+const nacelleGeo = new THREE.CapsuleGeometry(0.4, 1.5, 24, 48);
 nacelleGeo.rotateX(Math.PI / 2); // Lay flat
 nacelleGeo.translate(0, 0, -0.2); // Offset back from tower center
 const nacelleMesh = new THREE.Mesh(nacelleGeo, turbineMat);
@@ -718,7 +752,7 @@ nacelleGroup.add(nacelleMesh);
 hTargets.push(nacelleMesh);
 
 // 3. AVIATION BEACON (Red blinking light on top)
-const glowGeo = new THREE.SphereGeometry(0.08, 16, 16);
+const glowGeo = new THREE.SphereGeometry(0.08, 24, 18);
 const glowMat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 });
 const glowMesh = new THREE.Mesh(glowGeo, glowMat);
 glowMesh.position.set(0, 0.45, -0.5); // Top/back
@@ -730,7 +764,7 @@ rotorGroup.position.set(0, 0, 0.9); // Attached to the front of the nacelle
 nacelleGroup.add(rotorGroup);
 
 // 5. AERODYNAMIC SPINNER (Bullet-shaped nose cone)
-const spinnerGeo = new THREE.SphereGeometry(0.45, 32, 16);
+const spinnerGeo = new THREE.SphereGeometry(0.45, 48, 32);
 spinnerGeo.scale(1, 1, 1.4); // Stretch into an ellipsoid bullet shape
 const spinnerMesh = new THREE.Mesh(spinnerGeo, turbineMat);
 rotorGroup.add(spinnerMesh);
@@ -738,7 +772,7 @@ hTargets.push(spinnerMesh);
 
 // 6. AERODYNAMIC BLADES (Twisted airfoil profile)
 const bladeLength = 6.5;
-const bladeGeo = new THREE.CylinderGeometry(0.02, 0.25, bladeLength, 16);
+const bladeGeo = new THREE.CylinderGeometry(0.02, 0.25, bladeLength, 24);
 bladeGeo.scale(1, 1, 0.15); // Flatten into a blade shape
 bladeGeo.translate(0, bladeLength / 2 + 0.3, 0); // Move pivot to root
 
@@ -776,7 +810,8 @@ window.addEventListener('mousemove', (e) => {
 window.addEventListener('resize', () => {
     camera.aspect = wrap.clientWidth / wrap.clientHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 2 : 2.5));
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight, false);
 });
 
 /* ── Animation Loop ─────────────────────────────────────── */
